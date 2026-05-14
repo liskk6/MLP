@@ -24,7 +24,7 @@ def calculateAmoutOfWeights(layers: list):
 # Funkcja do generowania wag
 # Przyjmuje liste z warstwami i uwzglednia bias
 # generuje liste z wagami dlugoscia [len(layers) - 1], gdzie dla kazdej warstwy tworzona jest osobna lista z wagami dla kazdego neurony
-# np. jesli bylo podane [... , 3 ,4], to otrzymamy wagi pomiedzy warstwa ukryta a warstwa wyjsciowa jako [4 listy po 3/4 (jesli jest bias) elementy]
+# np. jesli bylo podane [... , 3 ,4], to otrzymamy wagi pomiedzy warstwa ukryta a warstwa wyjsciowa jako [4 listy po 3 + 1 (jesli jest bias) elementy]
 # warstwa -> neuron -> wagi
 def generateWeights(layers: list, isBias : bool):
 

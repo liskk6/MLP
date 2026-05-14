@@ -51,48 +51,38 @@ def MLP(data : pd.DataFrame,layers: list, maxEra: int, isRandom : bool, isBias: 
 
         irisType = classes[data.iloc[era, 4]]
 
+
+
+
         deltasForEveryLayer = []
-        output_deltas = []
+
         output_results = sigmoidValuesForEveryLayer[-1]
-        #Dla przyladu [4,4,3] bedzie 2,1,0. 2 - warstwa wyjsciowa
-
-        deltasLayer = []
+        allDeltasLayer = []
+        outPutLayer = []
         for value in range(len(layers)):
-            # Delta dla warstwy wyjsciowej = Poprawna opd - faktyczna odp * pochodna funkci aktywaacji(faktyczna odp)
-            deltasLayer.append((irisType[value] - values[value]) * sigmoidDerivative(values[value]))
 
-        deltasForEveryLayer.append(deltasLayer)
+            # Delta dla warstwy wyjsciowej = Poprawna opd - faktyczna odp * pochodna funkci aktywaacji(faktyczna odp)
+            outPutLayer.append((irisType[value] - values[value]) * sigmoidDerivative(values[value]))
+
+        allDeltasLayer.append(outPutLayer)
 
         for layer in range(len(layers) - 2, -1, -1):
-            deltasForLayer = []
-
             deltasLayer = []
-            for neuron in range(len(layers[layer])):
-                deltasLayer = []
+            for neuron in range((layers[layer + 1 ])):
 
-                #Wynik neurona po funkcji aktywacji
-                neuronRes = sigmoidValuesForEveryLayer[layer][neuron]
-
-                #wagi neurona z warstwa nastepna
-                neuronWeights = revWeights[layer][neuron]
-
-                #delty nastepnej warstwy
-                deltasNextLayer = deltasForLayer[-1]
                 deltasSum = 0
-                for value in range(len(deltasNextLayer)):
-                    deltasSum += neuronWeights[value] * deltasNextLayer[values]
+                for value in range(len(allDeltasLayer[-1])):
+                    deltasSum += weights[layer][value][neuron] * allDeltasLayer[-1][value]
 
-                derivative = sigmoidDerivative(neuronRes[layer][neuron])
+                derivative = sigmoidDerivative(sigmoidValuesForEveryLayer[layer-1][neuron])
                 delta = deltasSum * derivative
                 deltasLayer.append(delta)
-            deltasForLayer.append(deltasLayer)
 
-            for neuron in range(len(layers[layer])):
-                for weightIndex in range(len(deltasLayer[-1])):
-                    weights[layer][neuron][weightIndex] =  weights[layer][neuron][weightIndex] * (learningSpeed * deltasForLayer[neuo])
+            allDeltasLayer.append(deltasLayer)
 
-
-
+            #for neuron in range(len(layers[layer])):
+             #   for weightIndex in range(len(deltasLayer[-1])):
+              #      weights[layer][neuron][weightIndex] =  weights[layer][neuron][weightIndex] * (learningSpeed * deltasForLayer[neuo])
 
 
 
@@ -128,7 +118,10 @@ def MLP(data : pd.DataFrame,layers: list, maxEra: int, isRandom : bool, isBias: 
 
 
 
-    return weights
+
+
+
+    return weights, allDeltasLayer
 
 
 
