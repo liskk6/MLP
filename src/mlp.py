@@ -1,29 +1,36 @@
 import pandas as pd
 import copy
-
+import random
+import numpy as np
 from mlp_functions import getValues,generateWeights,generateIndexToTrain, sigmoid, sigmoidDerivative
-def MLP(data : pd.DataFrame,layers: list, maxEra: int, isRandom : bool, isBias: bool, isMomentum , learningSpeed: float):
+
+
+def MLP(data : pd.DataFrame, layers: list, maxEpochs: int, isRandom : bool, isBias: bool, learningSpeed: float, momentumCoef : float, weightsParam=None):
 
     #Sprawdza czy dane wprowadzono poprawnie
-    if (maxEra > len(data) - 10) or (maxEra < 0):
+    if (maxEpochs < 0) or (maxEpochs < 0) or (learningSpeed < 0):
         return None
     classes = {"Iris-setosa": [1, 0, 0], "Iris-versicolor": [0, 1, 0], "Iris-virginica": [0, 0, 1]}
 
     #Wagi generowane przy uzyciu funkcji
-    weights = generateWeights(layers, isBias)
 
-    # Lista z indeksami do terningu z uwzglednieniem losowosci
-    trainIndices = generateIndexToTrain(isRandom, len(data), maxEra)
+    if weightsParam is not None:
+        weights = weightsParam
+    else:
+        weights = generateWeights(layers, isBias, "weights")
 
-    #if isMomentum:
+    momentum = generateWeights(layers, isBias, "momentum")
+
+    trainIndices =  [i for i in range(0, 150)]
+
+    useMomentum = momentumCoef > 0.0
 
 
-    epochs = 5000
-    for epoch in range(epochs):
-        #Petla dla kazdej epoki
+
+    for epoch in range(maxEpochs):
 
         if isRandom:
-            trainIndices = generateIndexToTrain(isRandom, len(data), maxEra)
+            trainIndices = random.sample(trainIndices,150)
 
         for era in trainIndices:
             #Pobiera dane
@@ -89,8 +96,15 @@ def MLP(data : pd.DataFrame,layers: list, maxEra: int, isRandom : bool, isBias: 
                 for currNeuron in range(len(inputsForEveryLayer[layerInd])):
 
                     for nextNeuron in range(len(allDeltasLayer[layerInd])):
-                        weights[layerInd][nextNeuron][currNeuron] =  weights[layerInd][nextNeuron][currNeuron] + (learningSpeed *  allDeltasLayer[layerInd][nextNeuron] * inputsForEveryLayer[layerInd][currNeuron])
-            if epoch == epochs - 1:
+                        gradient = learningSpeed * allDeltasLayer[layerInd][nextNeuron] * inputsForEveryLayer[layerInd][
+                            currNeuron]
+                        if useMomentum:
+                            step = gradient + (momentum[layerInd][nextNeuron][currNeuron] * momentumCoef)
+                            weights[layerInd][nextNeuron][currNeuron] += step
+                            momentum[layerInd][nextNeuron][currNeuron] = step
+                        else:
+                            weights[layerInd][nextNeuron][currNeuron] += gradient
+            if epoch == maxEpochs - 1:
                 print(f"Values: {values}. True answer: {irisType}")
 
 
