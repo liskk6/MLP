@@ -2,6 +2,7 @@ import pandas as pd
 import copy
 import random
 import numpy as np
+
 from mlp_functions import getValues,generateWeights,generateIndexToTrain, sigmoid, sigmoidDerivative
 
 
@@ -30,7 +31,10 @@ def MLP(data : pd.DataFrame, layers: list, maxEpochs: int, isRandom : bool, isBi
 
 
 
+
     for epoch in range(maxEpochs):
+        #Macierz pomylek
+        confusionMatrix =[[0 for _ in range(layers[-1])] for _ in range(layers[-1])]
 
         #Jesli wlaczona losowosc
         if isRandom:
@@ -114,6 +118,17 @@ def MLP(data : pd.DataFrame, layers: list, maxEpochs: int, isRandom : bool, isBi
             #Odwraca liste
             allDeltasLayer = allDeltasLayer[::-1]
 
+            #Pobieramy indeks poprawnej odpowiedzi
+            correctAnswer = irisType.index(max(irisType))
+            #pobieramy indeks wyliczonej odpowiedzi
+            mlpAnswer = values.index(max(values))
+
+            #Dodajemy do macierzy pomylek
+            confusionMatrix[correctAnswer][mlpAnswer] += 1
+
+
+
+
             #Oblicza nowe wagi i ewentualnie momentum
             for layerInd in range(len(layers) - 1):
 
@@ -130,10 +145,15 @@ def MLP(data : pd.DataFrame, layers: list, maxEpochs: int, isRandom : bool, isBi
                             momentum[layerInd][nextNeuron][currNeuron] = step
                         else:
                             weights[layerInd][nextNeuron][currNeuron] += gradient
+        correctSum = 0
+        for i in range(len(confusionMatrix)):
+            correctSum += confusionMatrix[i][i]
+        if epoch % 100 == 0 :
+            print(f"Epoch - {epoch}/{maxEpochs}. Matrix -{confusionMatrix} - {correctSum}/150 {round(correctSum/150*100, 3)}%")
 
 
 
-    return weights
+    return weights, confusionMatrix
 
 
 
