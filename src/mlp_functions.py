@@ -82,8 +82,6 @@ def generateIndexToTrain(isRandom: bool, dataLen: int, maxEra: int):
 
 #Funkcja aktywacji
 def sigmoid(sum: float):
-    if sum < -500:
-        return 0
 
     return 1.0 / (1.0 + math.exp(-sum))
 
