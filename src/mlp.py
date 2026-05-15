@@ -1,9 +1,10 @@
 import pandas as pd
 import copy
 import random
+import os
 import numpy as np
 
-from mlp_functions import getValues,generateWeights,generateIndexToTrain, sigmoid, sigmoidDerivative
+from mlp_functions import getValues,generateWeights, sigmoid, sigmoidDerivative
 
 
 def MLP(data : pd.DataFrame, layers: list, maxEpochs: int, isRandom : bool, isBias: bool, learningSpeed: float, momentumCoef : float, weightsParam=None):
@@ -29,8 +30,9 @@ def MLP(data : pd.DataFrame, layers: list, maxEpochs: int, isRandom : bool, isBi
     #Warunek uzycia momentum. Jesli wspolczynnik < 0 momentum nie bedzie uwzgledniony
     useMomentum = momentumCoef > 0.0
 
-
-
+    os.makedirs(os.path.dirname('stats/stats.txt'), exist_ok=True)
+    with open('stats/stats.txt', 'w', encoding='utf-8') as file:
+        file.write(f"MLP settings.\nLayers: {layers}; Epochs: {maxEpochs}; Random: {isRandom}; Bias: {isBias}; Learning speed: {learningSpeed}; Momentum coefficient: {momentumCoef}\n\n")
 
     for epoch in range(maxEpochs):
         #Macierz pomylek
@@ -150,6 +152,51 @@ def MLP(data : pd.DataFrame, layers: list, maxEpochs: int, isRandom : bool, isBi
             correctSum += confusionMatrix[i][i]
         if epoch % 100 == 0 :
             print(f"Epoch - {epoch}/{maxEpochs}. Matrix -{confusionMatrix} - {correctSum}/150 {round(correctSum/150*100, 3)}%")
+
+        if epoch % 20 == 0:
+
+            precision = [0.0 for _ in range(len(confusionMatrix))]
+            recall = [0.0 for _ in range(len(confusionMatrix))]
+            fmeasure = [0.0 for _ in range(len(confusionMatrix))]
+            classesList = ["Setosa", "Versicolor", "Virginica"]
+            for rowInd in range(len(confusionMatrix)):
+
+                TP = confusionMatrix[rowInd][rowInd]
+                FP = 0.0
+                FN = 0.0
+                for colInd in range(len(confusionMatrix)):
+                    if colInd == rowInd:
+                        continue
+                    else:
+                         FP += confusionMatrix[colInd][rowInd]
+                         FN += confusionMatrix[rowInd][colInd]
+
+                if(TP + FP == 0):
+                    precisionValue = 0
+                else:
+                    precisionValue = TP / (TP + FP)
+
+                if(TP + FN == 0):
+                    recallValue = 0
+                else:
+                    recallValue = TP / (TP + FN)
+                precision[rowInd] = precisionValue
+                recall[rowInd] = recallValue
+
+                if (precisionValue + recallValue == 0):
+                    fmeasure[rowInd] = 0
+                else:
+                    fmeasure[rowInd] = (2 * ((precisionValue * recallValue) / (precisionValue + recallValue)))
+
+            os.makedirs(os.path.dirname('stats/stats.txt'), exist_ok=True)
+            with open('stats/stats.txt', 'a', encoding='utf-8') as file:
+                file.write(f"\n{epoch}|{maxEpochs} - Epochs \n")
+                for irisType in  range(len(classesList)):
+                    file.write(f"{classesList[irisType]:<10} -- Precision = {round(precision[irisType],3)}; Recall = {round(recall[irisType], 3)}; FMeasure = {round(fmeasure[irisType], 3)}.\n")
+                file.write(f"Confusion Matrix: {confusionMatrix}. {correctSum}|{len(data)} ({round(correctSum / len(data) * 100, 3)}%)\n\n")
+
+
+
 
 
 
