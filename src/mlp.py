@@ -30,8 +30,8 @@ def MLP(data : pd.DataFrame, layers: list, maxEpochs: int, isRandom : bool, isBi
     #Warunek uzycia momentum. Jesli wspolczynnik < 0 momentum nie bedzie uwzgledniony
     useMomentum = momentumCoef > 0.0
 
-    os.makedirs(os.path.dirname('../stats/stats.txt'), exist_ok=True)
-    with open('../stats/stats.txt', 'w', encoding='utf-8') as file:
+    os.makedirs(os.path.dirname('stats/stats.txt'), exist_ok=True)
+    with open('stats/stats.txt', 'w', encoding='utf-8') as file:
         file.write(f"MLP settings.\nLayers: {layers}; Epochs: {maxEpochs}; Random: {isRandom}; Bias: {isBias}; Learning speed: {learningSpeed}; Momentum coefficient: {momentumCoef}\n\n")
 
     for epoch in range(maxEpochs):
@@ -188,11 +188,11 @@ def MLP(data : pd.DataFrame, layers: list, maxEpochs: int, isRandom : bool, isBi
                 else:
                     fmeasure[rowInd] = (2 * ((precisionValue * recallValue) / (precisionValue + recallValue)))
 
-            os.makedirs(os.path.dirname('../stats/stats.txt'), exist_ok=True)
-            with open('../stats/stats.txt', 'a', encoding='utf-8') as file:
+            os.makedirs(os.path.dirname('stats/stats.txt'), exist_ok=True)
+            with open('stats/stats.txt', 'a', encoding='utf-8') as file:
                 file.write(f"\n{epoch}|{maxEpochs} - Epochs \n")
                 for irisType in  range(len(classesList)):
-                    file.write(f"{classesList[irisType]:<10} --- Precision = {round(precision[irisType],3):<7}Recall = {round(recall[irisType], 3):<7}FMeasure = {round(fmeasure[irisType], 3)}.\n")
+                    file.write(f"{classesList[irisType]:<10} -- Precision = {round(precision[irisType],3)}; Recall = {round(recall[irisType], 3)}; FMeasure = {round(fmeasure[irisType], 3)}.\n")
                 file.write(f"Confusion Matrix: {confusionMatrix}. {correctSum}|{len(data)} ({round(correctSum / len(data) * 100, 3)}%)\n\n")
 
 
@@ -200,7 +200,7 @@ def MLP(data : pd.DataFrame, layers: list, maxEpochs: int, isRandom : bool, isBi
 
 
 
-    return weights
+    return weights, confusionMatrix
 
 
 
