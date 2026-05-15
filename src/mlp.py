@@ -104,11 +104,10 @@ def MLP(data : pd.DataFrame, layers: list, maxEpochs: int, isRandom : bool, isBi
                             momentum[layerInd][nextNeuron][currNeuron] = step
                         else:
                             weights[layerInd][nextNeuron][currNeuron] += gradient
-            if epoch == maxEpochs - 1:
-                print(f"Values: {values}. True answer: {irisType}")
 
 
-    return weights, allDeltasLayer, values
+
+    return weights
 
 
 
