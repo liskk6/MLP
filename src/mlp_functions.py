@@ -26,27 +26,40 @@ def calculateAmoutOfWeights(layers: list):
 # generuje liste z wagami dlugoscia [len(layers) - 1], gdzie dla kazdej warstwy tworzona jest osobna lista z wagami dla kazdego neurony
 # np. jesli bylo podane [... , 3 ,4], to otrzymamy wagi pomiedzy warstwa ukryta a warstwa wyjsciowa jako [4 listy po 3 + 1 (jesli jest bias) elementy]
 # warstwa -> neuron -> wagi
-def generateWeights(layers: list, isBias : bool):
+# Wypelnia 0, jesli ukazany jest momentum
+def generateWeights(layers: list, isBias : bool, init: str):
 
-    if isBias:
-        bias = 1
-    else:
-        bias = 0
+        if isBias:
+            bias = 1
+        else:
+            bias = 0
 
-    result = []
-    for i in range(1, len(layers)):
-        weightsForLayer = []
+        result = []
 
-        for j in range(layers[i]):
-            weightsForNeuron = []
+        for i in range(1, len(layers)):
+            weightsForLayer = []
 
-            for k in range(layers[i-1] + bias):
-               weightsForNeuron.append(random.uniform(-1.0, 1.0))
+            for j in range(layers[i]):
+                weightsForNeuron = []
 
-            weightsForLayer.append(weightsForNeuron)
-        result.append(weightsForLayer)
+                for k in range(layers[i-1] + bias):
 
-    return result
+                    if init == "weights":
+                        weightsForNeuron.append(random.uniform(-1.0, 1.0))
+                    elif init == "momentum":
+                        weightsForNeuron.append(0.0)
+
+                weightsForLayer.append(weightsForNeuron)
+            result.append(weightsForLayer)
+
+        return result
+
+
+
+
+
+
+
 
 
 #Jesli random wlaczony losuje maxEra elementow sposrod wszystkich indeksow
