@@ -1,5 +1,6 @@
 import pandas as pd
 import random
+random.seed(67)
 import math
 
 #Funkcja do pobrania wartosci
@@ -45,7 +46,8 @@ def generateWeights(layers: list, isBias : bool, init: str):
                 for k in range(layers[i-1] + bias):
 
                     if init == "weights":
-                        weightsForNeuron.append(random.uniform(-1.0, 1.0))
+                        limit = 1/ math.sqrt(layers[i-1])
+                        weightsForNeuron.append(random.uniform(-limit, limit))
                     elif init == "momentum":
                         weightsForNeuron.append(0.0)
 
