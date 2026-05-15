@@ -4,7 +4,7 @@ import random
 import os
 import numpy as np
 
-from mlp_functions import getValues,generateWeights, sigmoid, sigmoidDerivative
+from mlp_functions import getValues,generateWeights, sigmoid, sigmoidDerivative, forwardPropagation
 
 
 def MLP(data : pd.DataFrame, layers: list, maxEpochs: int, isRandom : bool, isBias: bool, learningSpeed: float, momentumCoef : float, weightsParam=None):
@@ -30,8 +30,8 @@ def MLP(data : pd.DataFrame, layers: list, maxEpochs: int, isRandom : bool, isBi
     #Warunek uzycia momentum. Jesli wspolczynnik < 0 momentum nie bedzie uwzgledniony
     useMomentum = momentumCoef > 0.0
 
-    os.makedirs(os.path.dirname('stats/stats.txt'), exist_ok=True)
-    with open('stats/stats.txt', 'w', encoding='utf-8') as file:
+    os.makedirs(os.path.dirname('../stats/statsTraining.txt'), exist_ok=True)
+    with open('../stats/statsTraining.txt', 'w', encoding='utf-8') as file:
         file.write(f"MLP settings.\nLayers: {layers}; Epochs: {maxEpochs}; Random: {isRandom}; Bias: {isBias}; Learning speed: {learningSpeed}; Momentum coefficient: {momentumCoef}\n\n")
 
     for epoch in range(maxEpochs):
@@ -188,19 +188,77 @@ def MLP(data : pd.DataFrame, layers: list, maxEpochs: int, isRandom : bool, isBi
                 else:
                     fmeasure[rowInd] = (2 * ((precisionValue * recallValue) / (precisionValue + recallValue)))
 
-            os.makedirs(os.path.dirname('stats/stats.txt'), exist_ok=True)
-            with open('stats/stats.txt', 'a', encoding='utf-8') as file:
+            os.makedirs(os.path.dirname('../stats/statsTraining.txt'), exist_ok=True)
+            with open('../stats/statsTraining.txt', 'a', encoding='utf-8') as file:
                 file.write(f"\n{epoch}|{maxEpochs} - Epochs \n")
                 for irisType in  range(len(classesList)):
-                    file.write(f"{classesList[irisType]:<10} -- Precision = {round(precision[irisType],3)}; Recall = {round(recall[irisType], 3)}; FMeasure = {round(fmeasure[irisType], 3)}.\n")
-                file.write(f"Confusion Matrix: {confusionMatrix}. {correctSum}|{len(data)} ({round(correctSum / len(data) * 100, 3)}%)\n\n")
+                    formattedMatrixRow = "[" + ", ".join([f"{val:>2}" for val in confusionMatrix[irisType]]) + "]"
+                    file.write(f"{formattedMatrixRow} {classesList[irisType]:<10} --- Precision = {round(precision[irisType],3):<7}Recall = {round(recall[irisType], 3):<6}FMeasure = {round(fmeasure[irisType], 3):<5}; True Positive = {confusionMatrix[irisType][irisType]}|{int(len(data)/len(confusionMatrix))};\n")
+                file.write(f"Confusion Matrix: {correctSum}|{len(data)} ({round(correctSum / len(data) * 100, 3)}%)\n\n")
+
+
+    return weights
+
+
+def MLP_test(data: pd.DataFrame, rowIndex: int, layers: list, isBias: bool, weightsParam=None):
+
+
+    classes = {"Iris-setosa": [1, 0, 0], "Iris-versicolor": [0, 1, 0], "Iris-virginica": [0, 0, 1]}
+    confusionMatrix = [[0 for _ in range(layers[-1])] for _ in range(layers[-1])]
+
+    originalValues = getValues(data, rowIndex, layers[0])
+
+    values, sigmoidValuesForEveryLayer, inputsForEveryLayer = forwardPropagation(weightsParam, layers, isBias,
+                                                                                 originalValues)
+
+    irisType = classes[data.iloc[rowIndex, 4]]
+
+    # Pobieramy indeks poprawnej odpowiedzi
+    correctAnswer = irisType.index(max(irisType))
+    # pobieramy indeks wyliczonej odpowiedzi
+    mlpAnswer = values.index(max(values))
+
+    # Dodajemy do macierzy pomylek
+    confusionMatrix[correctAnswer][mlpAnswer] += 1
+
+    errorMade = []
+    MSE = 0
+    for i in range(len(values)):
+        sum = irisType[i] - values[i]
+        MSE += sum
+        errorMade.append(sum)
+
+    path = '../stats/statsTesting.txt'
+    roundedWeights = [[[round(float(w), 5) for w in neuron] for neuron in layer] for layer in weightsParam]
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, 'w', encoding='utf-8') as file:
+        file.write(
+            f"MLP settings :\nMode: Testing; Layers: {layers}; Bias: {isBias}; Weights: {roundedWeights} ;  \n\n")
+        file.write(f"Original values: {[round(float(i), 5) for i in originalValues]};\n")
+        file.write(f"Output values : {[round(float(i), 5) for i in values]};  Response pattern: {irisType}; \n")
+        file.write(f"MSE: {round(MSE,4):<4};\n")
+        for i in range(len(errorMade)):
+            file.write(f"Neuron: {i + 1} - Error: {errorMade[i]}\n")
+
+
+        file.write(f"Output layer weights:{roundedWeights[-1]}\n")
+
+        roundedWeightsRev = roundedWeights[::-1]
+        for i in range(len(weightsParam) - 1, 0 , -1):
+            file.write(f"Hidden neurons layer weights: {roundedWeightsRev[i]}\n")
+        sigmoidValuesForEveryLayer = [[round(float(w), 5) for w in neuron]for neuron in sigmoidValuesForEveryLayer]
+        sigmoidValuesForEveryLayerRev = sigmoidValuesForEveryLayer[::-1]
+        for i in range(len(inputsForEveryLayer) -1 , 0 , -1):
+            file.write(f"Hidden neurons values: {sigmoidValuesForEveryLayerRev[i]}\n")
 
 
 
 
 
 
-    return weights, confusionMatrix
+
+
+    return errorMade
 
 
 
