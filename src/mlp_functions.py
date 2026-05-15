@@ -91,4 +91,4 @@ def sigmoid(sum: float):
     return 1.0 / (1.0 + math.exp(-sum))
 
 def sigmoidDerivative(sum:float):
-    return sigmoid(sum) * (1 - sigmoid(sum))
+    return sum * (1 - sum)
