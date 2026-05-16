@@ -17,11 +17,18 @@ def openFile(fileName : str):
     return df
 
 def getMLP(path:str):
-    result = []
+
     with open(path, 'r', encoding='utf-8') as file:
-        for line in file:
-            result.append(ast.literal_eval(line.strip()))
+        lines = file.readlines()
+        layers = ast.literal_eval(lines[0].strip())
+        maxEpochs = int(lines[1].strip())
+        isRandom = lines[2].strip() == 'True'
+        isBias = lines[3].strip() == 'True'
+        learningSpeed = float(lines[4].strip())
+        momentumCoef = float(lines[5].strip())
 
-    return result
+        weights_str = lines[6].strip().replace("np.float64(", "").replace(")", "")
+        weightsParam = ast.literal_eval(weights_str)
 
+        return layers, maxEpochs, isRandom, isBias, learningSpeed, momentumCoef, weightsParam
 
