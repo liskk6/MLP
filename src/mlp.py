@@ -1,20 +1,19 @@
 import pandas as pd
-import copy
+from datetime import datetime
 import random
 import os
 import numpy as np
-
 from mlp_functions import getValues, generateWeights, sigmoid, sigmoidDerivative, forwardPropagation,saveMLP,generateStatsForSave
 
 
 def MLP(data: pd.DataFrame, layers: list, maxEpochs: int, isRandom: bool, isBias: bool, learningSpeed: float,
-        momentumCoef: float, isSave :bool, weightsParam=None):
+        momentumCoef: float, isSave :bool,ifPrint: bool, logsFileName:str,saveFileName:str, weightsParam=None):
     # Sprawdza czy dane wprowadzono poprawnie
     if (maxEpochs <= 0) or (momentumCoef < 0.0) or (learningSpeed < 0.0) or len(layers) < 2:
         return None
     # Slownik z poprawnymi odpowiedziami
     classes = {"Iris-setosa": [1, 0, 0], "Iris-versicolor": [0, 1, 0], "Iris-virginica": [0, 0, 1]}
-    path = '../stats/statsTrainingBias.txt'
+    path = f'../stats/{logsFileName}.txt'
     # Wagi generowane przy uzyciu funkcji lub przyjmowane z funkcji
     if weightsParam is not None:
         weights = weightsParam
@@ -112,16 +111,19 @@ def MLP(data: pd.DataFrame, layers: list, maxEpochs: int, isRandom: bool, isBias
         correctSum = 0
         for i in range(len(confusionMatrix)):
             correctSum += confusionMatrix[i][i]
-        if epoch % 100 == 0:
-            print(
-                f"Epoch - {epoch}/{maxEpochs}. Matrix -{confusionMatrix} - {correctSum}/{len(data)} {round(correctSum / len(data) * 100, 3)}%")
+        if ifPrint:
+            if epoch % 100 == 0:
+                print(
+                    f"Epoch - {epoch}/{maxEpochs}. Matrix -{confusionMatrix} - "
+                    f"{correctSum}/{len(data)} {round(correctSum / len(data) * 100, 3)}%")
 
         if (epoch % 20 == 0) or epoch == maxEpochs:
             classesList, fmeasure, precision, recall = generateStatsForSave(confusionMatrix)
-
+            now = datetime.now()
+            t = now.strftime("%H:%M:%S")
             os.makedirs(os.path.dirname(path), exist_ok=True)
             with open(path, 'a', encoding='utf-8') as file:
-                file.write(f"\n{epoch}|{maxEpochs} - Epochs \n")
+                file.write(f"\n{epoch}|{maxEpochs} - Epochs. Time: {t}\n")
                 for irisType in range(len(classesList)):
                     formattedMatrixRow = "[" + ", ".join([f"{val:>2}" for val in confusionMatrix[irisType]]) + "]"
                     file.write(
@@ -130,7 +132,7 @@ def MLP(data: pd.DataFrame, layers: list, maxEpochs: int, isRandom: bool, isBias
                     f"Confusion Matrix: {correctSum}|{len(data)} ({round(correctSum / len(data) * 100, 3)}%)\n\n")
 
     if isSave:
-        path = '../saves/saveTraining.txt'
+        path = f'../saves/{saveFileName}.txt'
         saveMLP(path, layers, maxEpochs, isRandom, isBias, learningSpeed, momentumCoef,  weights)
 
 
@@ -165,10 +167,12 @@ def MLP_test(data: pd.DataFrame, rowIndex: int, layers: list, isBias: bool, weig
 
     path = '../stats/statsTesting.txt'
     roundedWeights = [[[round(float(w), 5) for w in neuron] for neuron in layer] for layer in weightsParam]
+    now = datetime.now()
+    t = now.strftime("%H:%M:%S")
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, 'w', encoding='utf-8') as file:
         file.write(
-            f"MLP settings :\nMode: Testing; Layers: {layers}; Bias: {isBias}; Weights: {roundedWeights} ;  \n\n")
+            f"MLP settings:\nMode: Testing; Time: {t} \nLayers: {layers}; Bias: {isBias};\nWeights: {roundedWeights} ;  \n\n")
         file.write(f"Original values: {[round(float(i), 5) for i in originalValues]};\n")
         file.write(f"Output values : {[round(float(i), 5) for i in values]};  Response pattern: {irisType}; \n")
         file.write(f"MSE: {round(MSE, 4):<4};\n")
