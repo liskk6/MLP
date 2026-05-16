@@ -173,16 +173,7 @@ def generateStatsForSave(confusionMatrix: list):
     return classesList, fmeasure, precision, recall
 
 
-def saveMLP(path: str, layers:list, maxEpochs:int, isRandom:bool, isBias: bool, learningSpeed: float, momentumCoef:float, weights:list ):
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, 'w', encoding='utf-8') as file:
-        file.write(f"{layers} \n")
-        file.write(f"{maxEpochs}\n")
-        file.write(f"{isRandom}\n")
-        file.write(f"{isBias}\n")
-        file.write(f"{learningSpeed}\n")
-        file.write(f"{momentumCoef}\n")
-        file.write(f"{weights}\n")
+
 
 
 
