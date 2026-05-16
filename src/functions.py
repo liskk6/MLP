@@ -1,16 +1,8 @@
 import pandas as pd
-import random
+import os
 import math
 import ast
-def modeOfOperation():
 
-    while True:
-        print("Choose mode of operation")
-        print("1 - Teaching mode")
-        print("2 - Testing mode")
-        inp = input("Your choice: ")
-        if (inp == '1') or (inp == '2'):
-            return int(inp)
 
 def openFile(fileName : str):
     df = pd.read_csv(fileName, sep=',')
@@ -31,4 +23,16 @@ def getMLP(path:str):
         weightsParam = ast.literal_eval(weights_str)
 
         return layers, maxEpochs, isRandom, isBias, learningSpeed, momentumCoef, weightsParam
+
+def saveMLP(fileName: str, layers:list, maxEpochs:int, isRandom:bool, isBias: bool, learningSpeed: float, momentumCoef:float, weights:list ):
+    path = f'../saves/{fileName}.txt'
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, 'w', encoding='utf-8') as file:
+        file.write(f"{layers} \n")
+        file.write(f"{maxEpochs}\n")
+        file.write(f"{isRandom}\n")
+        file.write(f"{isBias}\n")
+        file.write(f"{learningSpeed}\n")
+        file.write(f"{momentumCoef}\n")
+        file.write(f"{weights}\n")
 
