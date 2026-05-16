@@ -3,11 +3,11 @@ from datetime import datetime
 import random
 import os
 import numpy as np
-from mlp_functions import getValues, generateWeights, sigmoid, sigmoidDerivative, forwardPropagation,saveMLP,generateStatsForSave
+from mlp_functions import getValues, generateWeights, sigmoid, sigmoidDerivative, forwardPropagation,generateStatsForSave
 
 
 def MLP(data: pd.DataFrame, layers: list, maxEpochs: int, isRandom: bool, isBias: bool, learningSpeed: float,
-        momentumCoef: float, isSave :bool,ifPrint: bool, logsFileName:str,saveFileName:str, weightsParam=None):
+        momentumCoef: float, logsFileName:str, weightsParam=None):
     # Sprawdza czy dane wprowadzono poprawnie
     if (maxEpochs <= 0) or (momentumCoef < 0.0) or (learningSpeed < 0.0) or len(layers) < 2:
         return None
@@ -111,13 +111,13 @@ def MLP(data: pd.DataFrame, layers: list, maxEpochs: int, isRandom: bool, isBias
         correctSum = 0
         for i in range(len(confusionMatrix)):
             correctSum += confusionMatrix[i][i]
-        if ifPrint:
-            if epoch % 100 == 0:
-                print(
-                    f"Epoch - {epoch}/{maxEpochs}. Matrix -{confusionMatrix} - "
-                    f"{correctSum}/{len(data)} {round(correctSum / len(data) * 100, 3)}%")
 
-        if (epoch % 20 == 0) or epoch == maxEpochs:
+        if epoch % 50 == 0:
+            print(
+                f"Epoch - {epoch}/{maxEpochs}. Matrix -{confusionMatrix} - "
+                f"{correctSum}/{len(data)} {round(correctSum / len(data) * 100, 3)}%")
+
+        if (epoch % 20 == 0) or epoch == maxEpochs or epoch == 0:
             classesList, fmeasure, precision, recall = generateStatsForSave(confusionMatrix)
             now = datetime.now()
             t = now.strftime("%H:%M:%S")
@@ -131,9 +131,7 @@ def MLP(data: pd.DataFrame, layers: list, maxEpochs: int, isRandom: bool, isBias
                 file.write(
                     f"Confusion Matrix: {correctSum}|{len(data)} ({round(correctSum / len(data) * 100, 3)}%)\n\n")
 
-    if isSave:
-        path = f'../saves/{saveFileName}.txt'
-        saveMLP(path, layers, maxEpochs, isRandom, isBias, learningSpeed, momentumCoef,  weights)
+
 
 
     return weights
@@ -165,7 +163,7 @@ def MLP_test(data: pd.DataFrame, rowIndex: int, layers: list, isBias: bool, weig
         MSE += error * error
         errorMade.append(error)
 
-    path = '../stats/statsTesting.txt'
+    path = f'../stats/Testing{rowIndex}.txt'
     roundedWeights = [[[round(float(w), 5) for w in neuron] for neuron in layer] for layer in weightsParam]
     now = datetime.now()
     t = now.strftime("%H:%M:%S")
