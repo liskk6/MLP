@@ -2,6 +2,7 @@ import pandas as pd
 import os
 from mlp import MLP,MLP_test
 from functions import getMLP,saveMLP
+from autoencoder import autoencoder
 
 
 
@@ -14,7 +15,7 @@ def main():
     dataNorm[colsToNorm] = (data[colsToNorm] - data[colsToNorm].min()) / (
         data[colsToNorm].max() - data[colsToNorm].min())
 
-    MLPSettings = [[4,4,3], 100 , True, True, 0.1, 0.9, "statsTraining", "default"]
+    MLPSettings = [[4,4,3], 1000 , True, True, 0.2, 0.9, f"statsTraining", "default"]
     MLPSettingsStr = ['Layers:', "Epochs:", "Is random:", "Is bias:", "Learning speed:", "Momentum coefficient:", "Logs file name:", "File to save settings name:"]
     weights = None
 
@@ -40,12 +41,12 @@ def main():
                     print("You need to train model")
                     continue
                 row = int(input("Choose a row to test (1-150): "))
-                if row > 0 and row < len(data):
+                if row >= 1 and row <= len(data):
                     MLP_test(dataNorm, row-1,MLPSettings[0], MLPSettings[3], weights)
                 else:
                     print("There is no that row")
             elif choice == 3:
-                pass
+                autoencoder(MLPSettings[1],MLPSettings[2],MLPSettings[3], MLPSettings[4], MLPSettings[5])
             elif choice == 4:
                 changeChoice = -1
                 while changeChoice != 0:

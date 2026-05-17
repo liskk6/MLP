@@ -118,7 +118,7 @@ def MLP(data: pd.DataFrame, layers: list, maxEpochs: int, isRandom: bool, isBias
                 f"{correctSum}/{len(data)} {round(correctSum / len(data) * 100, 3)}%")
 
         if (epoch % 20 == 0) or epoch == maxEpochs or epoch == 0:
-            classesList, fmeasure, precision, recall = generateStatsForSave(confusionMatrix)
+            classesList, fmeasure, precision, recall = generateStatsForSave(confusionMatrix, 'Iris')
             now = datetime.now()
             t = now.strftime("%H:%M:%S")
             os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -130,9 +130,6 @@ def MLP(data: pd.DataFrame, layers: list, maxEpochs: int, isRandom: bool, isBias
                         f"{formattedMatrixRow} {classesList[irisType]:<10} --- Precision = {round(precision[irisType], 3):<7}Recall = {round(recall[irisType], 3):<6}FMeasure = {round(fmeasure[irisType], 3):<5}; True Positive = {confusionMatrix[irisType][irisType]}|{int(len(data) / len(confusionMatrix))};\n")
                 file.write(
                     f"Confusion Matrix: {correctSum}|{len(data)} ({round(correctSum / len(data) * 100, 3)}%)\n\n")
-
-
-
 
     return weights
 
@@ -163,7 +160,7 @@ def MLP_test(data: pd.DataFrame, rowIndex: int, layers: list, isBias: bool, weig
         MSE += error * error
         errorMade.append(error)
 
-    path = f'../stats/Testing{rowIndex}.txt'
+    path = f'../stats/Testing{rowIndex +1}.txt'
     roundedWeights = [[[round(float(w), 5) for w in neuron] for neuron in layer] for layer in weightsParam]
     now = datetime.now()
     t = now.strftime("%H:%M:%S")
@@ -178,7 +175,6 @@ def MLP_test(data: pd.DataFrame, rowIndex: int, layers: list, isBias: bool, weig
             file.write(f"Neuron: {i + 1} - Error: {errorMade[i]}\n")
 
         file.write(f"Output layer weights:{roundedWeights[-1]}\n")
-
         roundedWeightsRev = roundedWeights[::-1]
         for i in range(len(weightsParam) - 1, 0, -1):
             file.write(f"Hidden neurons layer weights: {roundedWeightsRev[i]}\n")

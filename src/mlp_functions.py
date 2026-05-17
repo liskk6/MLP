@@ -2,7 +2,7 @@ import pandas as pd
 import copy
 import random
 
-random.seed(67)
+random.seed(15)
 import math
 import os
 
@@ -133,7 +133,7 @@ def forwardPropagation(weights, layers, isBias, originalValues):
     return values, sigmoidValuesForEveryLayer, inputsForEveryLayer
 
 
-def generateStatsForSave(confusionMatrix: list):
+def generateStatsForSave(confusionMatrix: list, mode:str):
     correctSum = 0
     for i in range(len(confusionMatrix)):
         correctSum += confusionMatrix[i][i]
@@ -141,7 +141,10 @@ def generateStatsForSave(confusionMatrix: list):
     precision = [0.0 for _ in range(len(confusionMatrix))]
     recall = [0.0 for _ in range(len(confusionMatrix))]
     fmeasure = [0.0 for _ in range(len(confusionMatrix))]
-    classesList = ["Setosa", "Versicolor", "Virginica"]
+    if mode == "Iris":
+        classesList = ["Setosa", "Versicolor", "Virginica"]
+    else:
+        classesList = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
     for rowInd in range(len(confusionMatrix)):
         TP = confusionMatrix[rowInd][rowInd]
         FP = 0.0
