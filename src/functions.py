@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 import math
+import matplotlib.pyplot as plt
 import ast
 
 
@@ -36,3 +37,23 @@ def saveMLP(fileName: str, layers:list, maxEpochs:int, isRandom:bool, isBias: bo
         file.write(f"{momentumCoef}\n")
         file.write(f"{weights}\n")
 
+def plot_training_history(history_df):
+    if history_df is None or history_df.empty:
+        print("No training history available!")
+        return
+
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8))
+
+    ax1.plot(history_df['Epoch'], history_df['MSE'], color='red', linewidth=2)
+    ax1.set_title('Training Loss (MSE)')
+    ax1.set_ylabel('Mean Squared Error')
+    ax1.grid(True, linestyle='--', alpha=0.7)
+
+    ax2.plot(history_df['Epoch'], history_df['Accuracy'], color='green', linewidth=2)
+    ax2.set_title('Training Accuracy')
+    ax2.set_xlabel('Epochs')
+    ax2.set_ylabel('Accuracy (0 to 1)')
+    ax2.grid(True, linestyle='--', alpha=0.7)
+
+    plt.tight_layout()
+    plt.show()

@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 from mlp import MLP,MLP_test
-from functions import getMLP,saveMLP
+from functions import getMLP,saveMLP, plot_training_history
 from autoencoder import autoencoder
 
 
@@ -15,14 +15,16 @@ def main():
     dataNorm[colsToNorm] = (data[colsToNorm] - data[colsToNorm].min()) / (
         data[colsToNorm].max() - data[colsToNorm].min())
 
-    MLPSettings = [[4,4,3], 1000 , True, True, 0.2, 0.9, f"statsTraining", "default"]
+    MLPSettings = [[4,4,3], 100 , True, True, 0.2, 0.9, f"statsTraining", "default"]
     MLPSettingsStr = ['Layers:', "Epochs:", "Is random:", "Is bias:", "Learning speed:", "Momentum coefficient:", "Logs file name:", "File to save settings name:"]
-    weights = None
-
+    weights_MLP = None
+    history_df_MLP = None
+    weights_autoencoder = None
+    history_df_autoencoder = None
     choice = -1
     while choice != 0:
         print(f"--Main menu--\nChoose action: \n[1] Train MLP\n[2] Test MLP\n[3] Autoencoder "
-              f"\n[4] Show/Change MLP parameters\n[5] Load settings from file\n[6] Save settings to file\n"
+              f"\n[4] Show/Change MLP parameters\n[5] Load settings from file\n[6] Save settings to file\n[7]Draw a history of learning MLP\n[8]Draw a history of learning autoencoder\n"
               f"[0] Exit")
 
 
@@ -34,19 +36,19 @@ def main():
         else:
             if choice ==  1:
                 print("Training started")
-                weights = MLP(dataNorm, MLPSettings[0], MLPSettings[1], MLPSettings[2], MLPSettings[3], MLPSettings[4],
+                weights_MLP, history_df_MLP = MLP(dataNorm, MLPSettings[0], MLPSettings[1], MLPSettings[2], MLPSettings[3], MLPSettings[4],
                     MLPSettings[5], MLPSettings[6])
             elif choice == 2:
-                if weights is None:
+                if weights_MLP is None:
                     print("You need to train model")
                     continue
                 row = int(input("Choose a row to test (1-150): "))
                 if row >= 1 and row <= len(data):
-                    MLP_test(dataNorm, row-1,MLPSettings[0], MLPSettings[3], weights)
+                    MLP_test(dataNorm, row-1,MLPSettings[0], MLPSettings[3], weights_MLP)
                 else:
                     print("There is no that row")
             elif choice == 3:
-                autoencoder(MLPSettings[1],MLPSettings[2],MLPSettings[3], MLPSettings[4], MLPSettings[5])
+                weights_autoencoder , history_df_autoencoder = autoencoder(MLPSettings[1],MLPSettings[2],MLPSettings[3], MLPSettings[4], MLPSettings[5])
             elif choice == 4:
                 changeChoice = -1
                 while changeChoice != 0:
@@ -133,13 +135,17 @@ def main():
                         MLPSettings[7] = input("Enter the new file settings name: ")
                     os.system('cls')
             elif choice == 5:
-                inpFileName = input("Enter file name")
+                inpFileName = input("Enter file name: ")
                 path = f'../saves/{inpFileName}.txt'
-                MLPSettings[0], MLPSettings[1], MLPSettings[2], MLPSettings[3], MLPSettings[4],MLPSettings[5], weights =  getMLP(path)
+                MLPSettings[0], MLPSettings[1], MLPSettings[2], MLPSettings[3], MLPSettings[4],MLPSettings[5], weights_MLP =  getMLP(path)
                 print("Settings was copied")
             elif choice == 6:
-                saveMLP(MLPSettings[7], MLPSettings[0],MLPSettings[1],MLPSettings[2], MLPSettings[3], MLPSettings[4],MLPSettings[5], weights)
+                saveMLP(MLPSettings[7], MLPSettings[0],MLPSettings[1],MLPSettings[2], MLPSettings[3], MLPSettings[4],MLPSettings[5], weights_MLP)
                 print("Settings will be saved after program ends")
+            elif choice == 7:
+                plot_training_history(history_df_MLP)
+            elif choice == 8:
+                plot_training_history(history_df_autoencoder)
 
 
 

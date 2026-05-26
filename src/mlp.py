@@ -33,11 +33,11 @@ def MLP(data: pd.DataFrame, layers: list, maxEpochs: int, isRandom: bool, isBias
     with open(path, 'w', encoding='utf-8') as file:
         file.write(
             f"MLP settings.\nLayers: {layers}; Epochs: {maxEpochs}; Random: {isRandom}; Bias: {isBias}; Learning speed: {learningSpeed}; Momentum coefficient: {momentumCoef}\n\n")
-
+    training_history = []
     for epoch in range(1, maxEpochs+1):
         # Macierz pomylek
         confusionMatrix = [[0 for _ in range(layers[-1])] for _ in range(layers[-1])]
-
+        epochMse = 0.0
         # Jesli wlaczona losowosc
         if isRandom:
             trainIndices = random.sample(trainIndices, len(data))
@@ -59,6 +59,9 @@ def MLP(data: pd.DataFrame, layers: list, maxEpochs: int, isRandom: bool, isBias
             outPutLayer = []
 
             for value in range(layers[-1]):
+                error = irisType[value] - values[value]
+                epochMse += error ** 2
+
                 # Delta dla warstwy wyjsciowej = Poprawna opd - faktyczna odp * pochodna funkci aktywaacji(faktyczna odp)
                 outPutLayer.append((irisType[value] - values[value]) * sigmoidDerivative(values[value]))
             allDeltasLayer.append(outPutLayer)
@@ -112,7 +115,10 @@ def MLP(data: pd.DataFrame, layers: list, maxEpochs: int, isRandom: bool, isBias
         for i in range(len(confusionMatrix)):
             correctSum += confusionMatrix[i][i]
 
-        if epoch % 50 == 0:
+        epoch_accuracy = correctSum / len(data)
+        epochMse = epochMse / len(data)
+        training_history.append([epoch, epochMse, epoch_accuracy])
+        if epoch % 10 == 0:
             print(
                 f"Epoch - {epoch}/{maxEpochs}. Matrix -{confusionMatrix} - "
                 f"{correctSum}/{len(data)} {round(correctSum / len(data) * 100, 3)}%")
@@ -130,8 +136,8 @@ def MLP(data: pd.DataFrame, layers: list, maxEpochs: int, isRandom: bool, isBias
                         f"{formattedMatrixRow} {classesList[irisType]:<10} --- Precision = {round(precision[irisType], 3):<7}Recall = {round(recall[irisType], 3):<6}FMeasure = {round(fmeasure[irisType], 3):<5}; True Positive = {confusionMatrix[irisType][irisType]}|{int(len(data) / len(confusionMatrix))};\n")
                 file.write(
                     f"Confusion Matrix: {correctSum}|{len(data)} ({round(correctSum / len(data) * 100, 3)}%)\n\n")
-
-    return weights
+    history_df = pd.DataFrame(training_history, columns=['Epoch', 'MSE', 'Accuracy'])
+    return weights, history_df
 
 
 def MLP_test(data: pd.DataFrame, rowIndex: int, layers: list, isBias: bool, weightsParam=None):
@@ -182,5 +188,6 @@ def MLP_test(data: pd.DataFrame, rowIndex: int, layers: list, isBias: bool, weig
         sigmoidValuesForEveryLayerRev = sigmoidValuesForEveryLayer[::-1]
         for i in range(len(inputsForEveryLayer) - 1, 0, -1):
             file.write(f"Hidden neurons values: {sigmoidValuesForEveryLayerRev[i]}\n")
+
 
     return errorMade
